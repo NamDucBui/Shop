@@ -28,22 +28,7 @@ class ProductController{
 
     async create(req, res) {
         try {
-            const {name, price, stock, category_id} = req.body
-            
-            if(!name){
-                return res.status(400).json({message: "Thiếu tên product"})
-            } 
-            else if(!price){
-                return res.status(400).json({message: "Thiếu giá product"})
-            }
-            else if(!stock){
-                return res.status(400).json({message: "Thiếu số lượng product"})
-            }
-            else if(!category_id){
-                return res.status(400).json({message: "Thiếu category"})
-            }
-
-            const product = await ProductService.create({name, price, stock, category_id})
+            const product = await ProductService.create(req.validatedData)
             res.status(201).json(product)
         } catch (error) {
             res.status(500).json({message: error.message})
@@ -53,27 +38,14 @@ class ProductController{
     async update(req, res){
         try {
             const id = parseInt(req.params.id)
-            const {name, price, stock, category_id} = req.body
-
-            if(!name){
-                return res.status(400).json({message: "Thiếu tên product"})
-            } 
-            else if(!price){
-                return res.status(400).json({message: "Thiếu giá product"})
-            }
-            else if(!stock){
-                return res.status(400).json({message: "Thiếu số lượng product"})
-            }
-            else if(!category_id){
-                return res.status(400).json({message: "Thiếu category"})
-            }
+            
 
             const existing = await ProductService.getById(id)
             if(!existing){
                 return res.status(404).json({message: "Không tìm thấy product"})
             }
 
-            const product = await ProductService.update(id, {name, price, stock, category_id})
+            const product = await ProductService.update(id, req.validatedData)
             res.json(product)
         } catch (error) {
             res.status(500).json({message: error.message})

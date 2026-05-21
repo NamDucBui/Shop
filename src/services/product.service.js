@@ -17,6 +17,13 @@ class ProductService{
         })
     }
 
+    async update(id, data) {
+        return await prisma.products.update({
+            where: { id },
+            data
+        })
+    }
+
     async delete(id){
         return await prisma.products.delete({
             where: {id}

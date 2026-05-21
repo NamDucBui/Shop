@@ -17,6 +17,13 @@ class CategoryService{
         })
     }
 
+    async update(id, data) {
+        return await prisma.categories.update({
+            where: { id },
+            data
+        })
+    }
+
     async delete(id){
         return await prisma.categories.delete({
             where: {id}

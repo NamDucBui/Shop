@@ -28,11 +28,7 @@ class CategoryController{
 
     async create(req, res) {
         try {
-            const {name} = req.body
-            if(!name){
-                return res.status(400).json({message: "Thiếu tên category"})
-            } 
-            const category = await CategoryService.create({name})
+            const category = await CategoryService.create(req.validatedData)
             res.status(201).json(category)
         } catch (error) {
             res.status(500).json({message: error.message})
@@ -42,18 +38,13 @@ class CategoryController{
     async update(req, res){
         try {
             const id = parseInt(req.params.id)
-            const {name} = req.body
-
-            if(!name){
-                return res.status(400).json({message: "Thiếu tên category"})
-            }
 
             const existing = await CategoryService.getById(id)
             if(!existing){
                 return res.status(404).json({message: "Không tìm thấy category"})
             }
 
-            const category = await CategoryService.update(id, {name})
+            const category = await CategoryService.update(id, req.validatedData)
             res.json(category)
         } catch (error) {
             res.status(500).json({message: error.message})
