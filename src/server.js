@@ -1,7 +1,8 @@
 const express = require('express')
-const prisma = require('./lib/prisma')
-
 const app = express()
+const categoryRouter = require('./routes/category.route')
+const productRouter = require('./routes/product.route')
+
 require ('dotenv').config()
 app.use(express.json())
 
@@ -9,14 +10,8 @@ app.get('/', (req, res) => {
     res.json({message: 'Server đang chạy'})
 })
 
-app.get('/users', async (req, res) => {
-  try {
-    const users = await prisma.users.findMany()
-    res.json(users)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
+app.use('/categories', categoryRouter)
+app.use('/products', productRouter)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
