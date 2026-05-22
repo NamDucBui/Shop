@@ -35,13 +35,10 @@ class CartService{
                 }
             }
         })
-        if(!cart) return {items: [], total: 0}
+        if(!cart) return {items: []}
 
-        // Tính tổng tiền
-        const total = cart.cart_items.reduce((sum, item) => {
-            return sum + Number(item.products.price) * item.quantity
-        }, 0)
-        return {...cart, total}
+        // Toàn bộ cart
+        return {...cart}
     }
 
     // Thêm sản phẩm vào giỏ
