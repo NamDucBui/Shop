@@ -1,3 +1,4 @@
+const { sendOrderConfirmation } = require('../services/email.service')
 const OrderService = require('../services/order.service')
 const AppError = require('../utils/appError')
 
@@ -7,6 +8,8 @@ class OrderController {
     async createOrder(req, res){
         try {
             const order = await OrderService.createOrder(req.user.id)
+            sendOrderConfirmation(req.user.email, order)
+                .catch(err => console.error("Lỗi gửi email:", err))
             res.status(201).json({
                 message: 'Đặt hàng thành công',
                 order
