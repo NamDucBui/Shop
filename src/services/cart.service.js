@@ -1,4 +1,5 @@
 const prisma = require("../lib/prisma");
+const AppError = require("../utils/appError");
 
 class CartService{
 
@@ -50,11 +51,11 @@ class CartService{
         })
 
         if(!product){
-            throw new Error('Sản phẩm không tồn tại')
+            throw new AppError('Sản phẩm không tồn tại', 404)
         }
 
         if(product.stock < data.quantity){
-            throw new Error(`Chỉ còn ${product.stock} sản phẩm trong kho` )
+            throw new AppError(`Chỉ còn ${product.stock} sản phẩm trong kho`, 400)
         }
 
         // Lấy hoặc tạo cart
@@ -73,7 +74,7 @@ class CartService{
             // Đã có => tăng quantity
             const newQuantity = existingItem.quantity + data.quantity
             if(product.stock < newQuantity) {
-                throw new Error(`Chỉ còn ${product.stock} sản phẩm trong kho` )
+                throw new AppError(`Chỉ còn ${product.stock} sản phẩm trong kho`, 400)
             }
 
             return await prisma.cart_items.update({
@@ -104,7 +105,7 @@ class CartService{
         })
 
         if(!cart){
-            throw new Error('Giỏ hàng không tồn tại')
+            throw new AppError('Giỏ hàng không tồn tại', 404)
         }
 
         // Kiểm tra item có trong giỏ không
@@ -117,7 +118,7 @@ class CartService{
             }
         })
         if(!item) {
-            throw new Error('Sản phẩm không có trong giỏ hàng')
+            throw new AppError('Sản phẩm không có trong giỏ hàng', 404)
         }
 
         // Kiểm tra stock
@@ -125,7 +126,7 @@ class CartService{
             where: {id: productId}
         })
         if(products.stock < quantity) {
-            throw new Error(`Chỉ còn ${products.stock} sản phẩm trong kho`)
+            throw new AppError(`Chỉ còn ${products.stock} sản phẩm trong kho`, 400)
         }
 
         return await prisma.cart_items.update({
@@ -145,7 +146,7 @@ class CartService{
             where: {user_id: userId}
         })
         if(!cart){
-            throw new Error('Giỏ hàng không tồn tại')
+            throw new AppError('Giỏ hàng không tồn tại', 404)
         }
 
         const items = await prisma.cart_items.findUnique({
@@ -157,7 +158,7 @@ class CartService{
             }
         })
         if(!items){
-            throw new Error('Sản phẩm không có trong giỏ hàng')
+            throw new AppError('Sản phẩm không có trong giỏ hàng', 404)
         }
 
         return await prisma.cart_items.delete({
@@ -176,7 +177,7 @@ class CartService{
             where: {user_id: userId}
         })
         if(!cart){
-            throw new Error('Giỏ hàng không tồn tại')
+            throw new AppError('Giỏ hàng không tồn tại', 404)
         }
 
         return await prisma.cart_items.deleteMany({

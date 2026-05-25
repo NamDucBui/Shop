@@ -1,4 +1,5 @@
 const OrderService = require('../services/order.service')
+const AppError = require('../utils/appError')
 
 class OrderController {
 
@@ -11,7 +12,7 @@ class OrderController {
                 order
             })
         } catch (error) {
-            const status = error.message === 'Giỏ hàng trống' ? 400 : 500
+            const status = error instanceof AppError ? error.statusCode : 500
             res.status(status).json({message: error.message})
         }
     }
@@ -22,7 +23,8 @@ class OrderController {
             const orders = await OrderService.getMyOrders(req.user.id)
             res.json(orders)
         } catch (error) {
-            res.status(500).json({message: error.message})
+            const status = error instanceof AppError ? error.statusCode : 500
+            res.status(status).json({message: error.message})
         }
     }
 
@@ -36,7 +38,7 @@ class OrderController {
             )
             res.json(order)
         } catch (error) {
-            const status = error.message.includes('quyền') ? 403 : 404
+            const status = error instanceof AppError ? error.statusCode : 500
             res.status(status).json({message: error.message})
         }
     }
@@ -47,7 +49,8 @@ class OrderController {
             const result = await OrderService.getAllOrders(req.query)
             res.json(result)
         } catch (error) {
-            res.status(500).json({message: error.message})
+            const status = error instanceof AppError ? error.statusCode : 500
+            res.status(status).json({message: error.message})
         }
     }
 
@@ -60,7 +63,7 @@ class OrderController {
             )
             res.json({message: 'Cập nhật trạng thái đơn hàng thành công', order})
         } catch (error) {
-            const status = error.message.includes('tìm thấy') ? 404 : 400
+            const status = error instanceof AppError ? error.statusCode : 500
             res.status(status).json({message: error.message})
         }
     }
@@ -74,7 +77,7 @@ class OrderController {
             )
             res.json({message: "Hủy đơn hàng thành công", order})
         } catch (error) {
-            const status = error.message.includes('quyền') ? 403 : 400
+            const status = error instanceof AppError ? error.statusCode : 500
             res.status(status).json({message: error.message})
         }
     }

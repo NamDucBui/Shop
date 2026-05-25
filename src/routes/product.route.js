@@ -5,12 +5,15 @@ const validate = require('../middlewares/validate.middleware')
 const authMiddleware = require('../middlewares/auth.middleware')
 const roleMiddleware = require('../middlewares/role.middleware')
 const {createProductSchema, updateProductSchema } = require('../validations/product.validation')
+const upload = require('../middlewares/upload.middleware')
 
 router.get('/', ProductController.getAll.bind(ProductController))
 router.get('/:id', ProductController.getById.bind(ProductController))
+router.get('/category/:categoryId', ProductController.getByCategory.bind(ProductController))
 router.post('/',
     authMiddleware,
     roleMiddleware('admin'),
+    upload.single('image'),
     validate(createProductSchema), ProductController.create.bind(ProductController))
 router.put('/:id',
     authMiddleware,

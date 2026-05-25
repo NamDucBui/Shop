@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma')
+const AppError = require('../utils/appError')
 
 class OrderService {
 
@@ -19,12 +20,19 @@ class OrderService {
                 throw new Error('Giỏ hàng trống')
             }
 
-            // B2 - Tính tổng tiền
+            // B2 - Kiểm tra stock từng sản phẩm
+            for(const item of cart.cart_items) {
+                if(item.products.stock < item.quantity){
+                    throw new Error(`${item.products.name} chỉ còn ${item.products.stock} sản phẩm`)
+                }
+            }
+
+            // B3 - Tính tổng tiền
             const total = cart.cart_items.reduce((sum, item) => {
                 return sum + Number(item.products.price) * item.quantity
             }, 0)
 
-            // B3 - Tạo order
+            // B4 - Tạo order
             const order = await tx.orders.create({
                 data: {
                     user_id: userId,
@@ -49,7 +57,7 @@ class OrderService {
                 }
             })
 
-            // B5 - Trừ stock
+            // B6 - Trừ stock
             for(const item of cart.cart_items){
                 await tx.products.update({
                     where: {id: item.product_id},
@@ -57,7 +65,7 @@ class OrderService {
                 })
             }
 
-            // B6 - Xóa giỏ hàng
+            // B7 - Xóa giỏ hàng
             await tx.cart_items.deleteMany({
                 where: {cart_id: cart.id}
             })
@@ -101,12 +109,12 @@ class OrderService {
             }
         })
         if(!order){
-            throw new Error("Không tìm thấy đơn hàng")
+            throw new AppError("Không tìm thấy đơn hàng", 404)
         }
 
         // User chỉ xem đơn của mình
         if(role !== 'admin' && order.user_id !== userId){
-            throw new Error("Không có quyền xem đơn hàng này")
+            throw new AppError("Không có quyền xem đơn hàng này", 403)
         }
 
         return order
@@ -154,12 +162,12 @@ class OrderService {
             where: {id: orderId}
         })
         if(!order){
-            throw new Error('Không tìm thấy đơn hàng')
+            throw new AppError('Không tìm thấy đơn hàng', 404)
         }
 
         // Không thể thay đổi đơn đã cancell/deli
         if(['cancelled', 'delivered'].includes(order.status)){
-            throw new Error(`Không thể thay đổi đơn hàng đã ${order.status}`)
+            throw new AppError(`Không thể thay đổi đơn hàng đã ${order.status}`, 400)
         }
 
         return await prisma.orders.update({
@@ -176,13 +184,13 @@ class OrderService {
                 include: {order_items: true}
             })
             if(!order){
-                throw new Error("Không tìm thấy đơn hàng")
+                throw new AppError("Không tìm thấy đơn hàng", 404)
             }
             if(order.user_id !== userId){
-                throw new Error("Không có quyền hủy đơn hàng này")
+                throw new AppError("Không có quyền hủy đơn hàng này", 403)
             }
             if(order.status !== 'pending'){
-                throw new Error("Chỉ hủy được đơn hàng đang chờ xử lý")
+                throw new AppError("Chỉ hủy được đơn hàng đang chờ xử lý", 400)
             }
 
             // Hoàn lại stock

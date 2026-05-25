@@ -1,5 +1,6 @@
 const express = require('express')
 const cookieParser = require('cookie-parser')
+const path = require('path')
 const app = express()
 
 const authRouter = require('./routes/auth.route')
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
     res.json({message: 'Server đang chạy'})
 })
 
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/auth', authRouter)
 app.use('/categories', categoryRouter)
 app.use('/products', productRouter)
