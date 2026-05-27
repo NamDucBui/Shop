@@ -53,13 +53,13 @@ class CartService{
         if(!product){
             throw new AppError('Sản phẩm không tồn tại', 404)
         }
-
         if(product.stock < data.quantity){
             throw new AppError(`Chỉ còn ${product.stock} sản phẩm trong kho`, 400)
         }
 
         // Lấy hoặc tạo cart
         const cart = await this.getOrCreateCart(userId)
+        
 
         // Kiểm tra sản phẩm đã có trong giỏ chưa
         const existingItem = await prisma.cart_items.findUnique({
@@ -96,6 +96,7 @@ class CartService{
                 quantity: data.quantity
             }
         })
+        
     }
 
     // Update số lượng

@@ -4,18 +4,34 @@ const AppError = require('../utils/appError')
 
 class OrderController {
 
-    // Tạo đơn
+    // Tạo đơn (Hỗ trợ cả đặt từ Giỏ hàng và Mua ngay trực tiếp)
     async createOrder(req, res){
         try {
-            const order = await OrderService.createOrder(req.user.id)
+            const { product_id, quantity } = req.body;
+            let directItem = null;
+
+            // Nếu phía Client gửi kèm product_id lên -> Đây là TH "Mua ngay"
+            if (product_id) {
+                directItem = {
+                    product_id: parseInt(product_id),
+                    quantity: parseInt(quantity) || 1
+                };
+            }
+
+            // Gọi service xử lý (Truyền thêm directItem nếu có)
+            const order = await OrderService.createOrder(req.user.id, directItem)
+            
+            // Gửi email xác nhận đơn hàng (chạy bất đồng bộ nền)
             sendOrderConfirmation(req.user.email, order)
                 .catch(err => console.error("Lỗi gửi email:", err))
+
             res.status(201).json({
                 message: 'Đặt hàng thành công',
                 order
             })
         } catch (error) {
-            const status = error instanceof AppError ? error.statusCode : 500
+            // Đổi fallback mặc định thành 400 (BadRequest) thay vì 500 nếu Service ném ra lỗi thường (Error)
+            const status = error instanceof AppError ? error.statusCode : 400
             res.status(status).json({message: error.message})
         }
     }
