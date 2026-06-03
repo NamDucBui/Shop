@@ -14,7 +14,7 @@ class CartController {
 
     async addToCart(req, res) {
         try {
-            const item = await CartService.addToCard(req.user.id, req.validatedData)
+            const item = await CartService.addToCart(req.user.id, req.validatedData)
             res.status(201).json({message: 'Thêm vào giỏ hàng thành công', item})
         } catch (error) {
             const status = error instanceof AppError ? error.statusCode : 500
@@ -27,7 +27,7 @@ class CartController {
             const productId = parseInt(req.params.productId)
             const {quantity} = req.validatedData
 
-            const item = await CartService.updateCartItems(req.user.id, productId, quantity)
+            const item = await CartService.updateCartItem(req.user.id, productId, quantity)
             res.json({message: "Cập nhật giỏ hàng thành công", item})
         } catch (error) {
             const status = error instanceof AppError ? error.statusCode : 500

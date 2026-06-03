@@ -1,43 +1,26 @@
-const multer = require("multer");
-const path = require("node:path");
-const { v4: uuidv4 } = require("uuid");
-const fs = require('fs')
+// src/middlewares/upload.middleware.js
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Tạo thư mục nếu chưa có
-const uploadDir = 'uploads/products'
-if(!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir, {recursive: true})
-}
+// 1. Cấu hình xác thực tài khoản Cloudinary từ file .env
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// Lưu local
-const localStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir)
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname)
-        const filename = `${uuidv4()}${ext}`
-        cb(null, filename)
-    }
-})
+// 2. Cấu hình bộ lưu trữ Cloudinary Storage cho Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'products', // Tên thư mục chứa ảnh sản phẩm trên Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // Các định dạng ảnh cho phép
+    transformation: [{ width: 600, height: 600, crop: 'limit' }], // Tự động tối ưu/nén kích thước ảnh khi upload để tiết kiệm dung lượng
+  },
+});
 
-// Kiểm tra loại file
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+// 3. Tạo middleware upload
+const upload = multer({ storage: storage });
 
-    if(allowedTypes.includes(file.mimetype)){
-        cb(null, true)
-    } else {
-        cb(new Error('Chỉ chấp nhận file ảnh (jpg, png, webp)'), false)
-    }
-}
-
-const upload = multer({
-    storage: localStorage,
-    fileFilter,
-    limits: {
-        fileSize: 5 * 1024 * 1024
-    }
-})
-
-module.exports = upload
+module.exports = upload;

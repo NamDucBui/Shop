@@ -1,7 +1,7 @@
 const AuthService = require('../services/auth.service')
 
 class AuthController {
-    async register (req, res) {
+    async register(req, res) {
         try {
             const user = await AuthService.register(req.validatedData)
             res.status(201).json({
@@ -9,16 +9,14 @@ class AuthController {
                 user
             })
         } catch (error) {
-            if(error.message === 'Email đã tồn tại'){
-                return res.status(409).json({message: error.message})
-            }
-            res.status(500).json({message: error.message})
+            const status = error instanceof AppError ? error.statusCode : 500
+            res.status(status).json({ message: error.message })
         }
     }
 
-    async login (req, res){
+    async login(req, res) {
         try {
-            const {user, token} = await AuthService.login(req.validatedData)
+            const { user, token } = await AuthService.login(req.validatedData)
 
             res.cookie('token', token, {
                 httpOnly: true,
@@ -31,13 +29,14 @@ class AuthController {
                 token
             })
         } catch (error) {
-            res.status(401).json({message: error.message})
+            const status = error instanceof AppError ? error.statusCode : 500
+            res.status(status).json({ message: error.message })
         }
     }
 
-    async logout (req, res){
+    async logout(req, res) {
         res.clearCookie('token')
-        res.json({message: 'Đăng xuất thành công'})
+        res.json({ message: 'Đăng xuất thành công' })
     }
 }
 

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const prisma = require('../lib/prisma')
+const AppError = require('../utils/appError')
 
 class AuthService{
     async register(data){
@@ -9,7 +10,7 @@ class AuthService{
         })
 
         if(existing){
-            throw new Error('Email đã tồn tại')
+            throw new AppError('Email đã tồn tại', 409)
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 10)

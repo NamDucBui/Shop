@@ -1,3 +1,4 @@
+require ('dotenv').config()
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
@@ -10,10 +11,12 @@ const productRouter = require('./routes/product.route')
 const cartRouter = require('./routes/cart.route')
 const orderRouter = require('./routes/order.route')
 
-require ('dotenv').config()
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors())
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}))
 
 app.get('/', (req, res) => {
     res.json({message: 'Server đang chạy'})

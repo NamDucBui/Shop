@@ -36,14 +36,17 @@ class CartService{
                 }
             }
         })
-        if(!cart) return {items: []}
+        if(!cart) return {cart_items: [], total: 0}
+
+        const total = cart.cart_items.reduce((sum, item) => 
+        sum + Number(item.products.price) * item.quantity, 0)
 
         // Toàn bộ cart
-        return {...cart}
+        return {...cart, total}
     }
 
     // Thêm sản phẩm vào giỏ
-    async addToCard(userId, data){
+    async addToCart(userId, data){
 
         // Kiểm tra sản phẩm tồn tại + còn hàng
         const product = await prisma.products.findUnique({
@@ -100,7 +103,7 @@ class CartService{
     }
 
     // Update số lượng
-    async updateCartItems(userId, productId, quantity){
+    async updateCartItem(userId, productId, quantity){
         const cart = await prisma.carts.findUnique({
             where: {user_id: userId}
         })
